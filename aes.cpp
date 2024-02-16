@@ -82,6 +82,36 @@ void AES::subBytes(int (&state)[4][4])
     }
 }
 
+void AES::shiftRows(int (&state)[4][4])
+{
+    /*
+     *
+     * * * * * * * ShiftRows * * * * * *
+     * ShiftRows as defined in the FIPS documentation skips the
+     * first row and, for every subsequent row, that row is shifted
+     * r times.
+     *
+     * This implementation shifts each column while looping; for example
+     * column 0 / row 1 in the new array becomes the value at
+     * state[1][1].  This is because (c+r) = (0+1).
+     */
+
+    uint8_t temp[4];
+
+    for (int r = 1; r < 4; r++) {
+
+        for (int c = 0; c < 4; c++) {
+            temp[c] = state[r][(c + r) % 4];
+        }
+
+        // assignment into state
+        for (int c = 0; c < 4; c++)  {
+            state[r][c] = temp[c];
+        }
+    }
+}
+
+
 //void AES::rotWord(word_t* rWord)
 //{
 //    uint8_t swap = rWord->word[0];
@@ -186,4 +216,67 @@ uint32_t* AES::KeyExpansion(uint8_t* key, int Nk, int Nr)
     }
 
     return w;
+}
+
+uint8_t galoisMult(uint8_t a, uint8_t b) {
+    uint8_t p = 0; // the product of the multiplication
+    for (int i = 0; i < 8; i++) {
+        if (b & 1) { // if the lowest bit of b is set
+            p ^= a; // add a to p
+        }
+
+        bool highBitSet = a & 0x80; // check if the highest bit of a is set
+        a <<= 1; // shift a to the left, multiplying it by x
+
+        if (highBitSet) {
+            a ^= 0x1b; // modulo x^8 + x^4 + x^3 + x + 1
+        }
+
+        b >>= 1; // shift b to the right, dividing it by x
+    }
+    return p;
+}
+
+uint8_t AES::galoisMult(uint8_t a, uint8_t b)
+{
+    uint8_t p = 0;
+    for (int i = 0; i < 8; i++) {
+        if (b & 1) {
+            p ^= a;
+        }
+
+        bool highBitSet = a & 0x80;
+        a <<= 1;
+
+        if (highBitSet) {
+            a ^= 0x1b;
+        }
+
+        b >>= 1;
+    }
+    return p;
+}
+
+void AES::mixColumns(uint8_t (&state)[4][4])
+{
+    uint8_t temp[8];
+    int i = 0;
+    /*
+     * Pretty straight-forward, column 0 is multiplied against row 0
+     * for every row in the MixMatrices.
+     */
+
+    for (int col = 0; col < 4; col++) {
+        for (int row = 0; row < 4; row++) {
+            temp[row] =
+                    galoisMult(state[0][col], mixColumnsMatrix[row][0]) ^
+                    galoisMult(state[1][col], mixColumnsMatrix[row][1]) ^
+                    galoisMult(state[2][col], mixColumnsMatrix[row][2]) ^
+                    galoisMult(state[3][col], mixColumnsMatrix[row][3]);
+        }
+
+        for (int row = 0; row < 4; ++row) {
+            state[row][col] = temp[row];
+        }
+    }
 }

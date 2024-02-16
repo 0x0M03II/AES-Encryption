@@ -16,8 +16,7 @@ int main() {
 
     AES* aesencryption = new AES();
 
-    uint32_t* expanded =
-            aesencryption->KeyExpansion(key, 4, 10);
+    uint32_t* expanded = aesencryption->KeyExpansion(key, 4, 10);
 
     for (int i = 0; i < 44; i++) {
         cout << hex << expanded[i] << endl;
