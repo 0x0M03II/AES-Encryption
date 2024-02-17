@@ -227,26 +227,6 @@ uint8_t galoisMult(uint8_t a, uint8_t b) {
     return p;
 }
 
-uint8_t AES::galoisMult(uint8_t a, uint8_t b)
-{
-    uint8_t p = 0;
-    for (int i = 0; i < 8; i++) {
-        if (b & 1) {
-            p ^= a;
-        }
-
-        bool highBitSet = a & 0x80;
-        a <<= 1;
-
-        if (highBitSet) {
-            a ^= 0x1b;
-        }
-
-        b >>= 1;
-    }
-    return p;
-}
-
 void AES::mixColumns(uint8_t (&state)[4][4])
 {
     uint8_t temp[8];
@@ -254,10 +234,10 @@ void AES::mixColumns(uint8_t (&state)[4][4])
     for (int col = 0; col < 4; col++) {
         for (int row = 0; row < 4; row++) {
             temp[row] =
-                    galoisMult(state[0][col], MixColumsMatrics[row][0]) ^
-                    galoisMult(state[1][col], MixColumsMatrics[row][1]) ^
-                    galoisMult(state[2][col], MixColumsMatrics[row][2]) ^
-                    galoisMult(state[3][col], MixColumsMatrics[row][3]);
+                    ffMultiply(state[0][col], MixColumsMatrics[row][0]) ^
+                    ffMultiply(state[1][col], MixColumsMatrics[row][1]) ^
+                    ffMultiply(state[2][col], MixColumsMatrics[row][2]) ^
+                    ffMultiply(state[3][col], MixColumsMatrics[row][3]);
         }
 
         for (int row = 0; row < 4; ++row) {

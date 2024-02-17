@@ -40,7 +40,6 @@ public:
     uint32_t* KeyExpansion(uint8_t* key, int Nk, int Nr);
     inline uint8_t ffAdd(uint8_t input, uint8_t input2);
 
-    uint8_t galoisMult(uint8_t a, uint8_t b);
     void mixColumns(uint8_t (&state)[4][4]);
 
     void shiftRows(uint8_t (&array)[4][4]);
