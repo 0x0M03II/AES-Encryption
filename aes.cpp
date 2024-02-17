@@ -63,7 +63,7 @@ inline uint8_t AES::ffMultiply(uint8_t num1, uint8_t num2) {
 }
 
 
-void AES::subBytes(int (&state)[4][4])
+void AES::subBytes(uint8_t (&state)[4][4])
 {
     uint8_t a, b;
     int subValue = 0;
@@ -82,7 +82,7 @@ void AES::subBytes(int (&state)[4][4])
     }
 }
 
-void AES::shiftRows(int (&state)[4][4])
+void AES::shiftRows(uint8_t (&state)[4][4])
 {
     /*
      *
@@ -110,16 +110,6 @@ void AES::shiftRows(int (&state)[4][4])
         }
     }
 }
-
-
-//void AES::rotWord(word_t* rWord)
-//{
-//    uint8_t swap = rWord->word[0];
-//    for (int i = 0; i <= 2; i++) {
-//        rWord->word[i] = rWord->word[i + 1];
-//    }
-//    rWord->word[3] = swap;
-//}
 
 uint32_t AES::rotWord(uint32_t rWord)
 {
@@ -260,23 +250,58 @@ uint8_t AES::galoisMult(uint8_t a, uint8_t b)
 void AES::mixColumns(uint8_t (&state)[4][4])
 {
     uint8_t temp[8];
-    int i = 0;
-    /*
-     * Pretty straight-forward, column 0 is multiplied against row 0
-     * for every row in the MixMatrices.
-     */
 
     for (int col = 0; col < 4; col++) {
         for (int row = 0; row < 4; row++) {
             temp[row] =
-                    galoisMult(state[0][col], mixColumnsMatrix[row][0]) ^
-                    galoisMult(state[1][col], mixColumnsMatrix[row][1]) ^
-                    galoisMult(state[2][col], mixColumnsMatrix[row][2]) ^
-                    galoisMult(state[3][col], mixColumnsMatrix[row][3]);
+                    galoisMult(state[0][col], MixColumsMatrics[row][0]) ^
+                    galoisMult(state[1][col], MixColumsMatrics[row][1]) ^
+                    galoisMult(state[2][col], MixColumsMatrics[row][2]) ^
+                    galoisMult(state[3][col], MixColumsMatrics[row][3]);
         }
 
         for (int row = 0; row < 4; ++row) {
             state[row][col] = temp[row];
         }
+    }
+}
+
+void AES::addRoundKey(uint8_t (&state)[4][4], uint32_t* w, int round)
+{
+    int start = round * 4;
+
+    for (int i = 0; i < 4; i++) {
+        uint32_t roundKeyWord = w[start + i];
+
+        for (int j = 0; j < 4; j++) {
+            // determine which round key we need
+            uint8_t roundKeyByte = (roundKeyWord >> (24 - 8 * j)) & 0xFF;
+            state[j][i] ^= roundKeyByte;
+        }
+    }
+}
+
+void AES::cipher(uint8_t in[16], uint8_t out[16], uint32_t* w)
+{
+    uint8_t state[4][4];
+    for (int k = 0; k < 16; k++) {
+        state[k % 4][k / 4] = in[k];
+    }
+
+    addRoundKey(state, w, 0);
+
+    for (int round = 1; round < 10; round++) {
+        subBytes(state);
+        shiftRows(state);
+        mixColumns(state);
+        addRoundKey(state, w, round);
+    }
+
+    subBytes(state);
+    shiftRows(state);
+    addRoundKey(state, w, 10);
+
+    for (int i = 0; i < 16; i++) {
+        out[i] = state[i % 4][i / 4];
     }
 }
