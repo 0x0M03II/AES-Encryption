@@ -283,25 +283,66 @@ void AES::addRoundKey(uint8_t (&state)[4][4], uint32_t* w, int round)
 
 void AES::cipher(uint8_t in[16], uint8_t out[16], uint32_t* w)
 {
+    int round = 0;
     uint8_t state[4][4];
     for (int k = 0; k < 16; k++) {
         state[k % 4][k / 4] = in[k];
     }
 
+    printf("round[ %2d].input\t%s\n", round, plaintext);
+    printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
     addRoundKey(state, w, 0);
 
-    for (int round = 1; round < 10; round++) {
+    for (round = 1; round < 10; round++) {
+        printf("round[ %2d].start\t%s\n", round, printHexString(state).c_str());
+
         subBytes(state);
+        printf("round[ %2d].s_box\t%s\n", round, printHexString(state).c_str());
+
         shiftRows(state);
+        printf("round[ %2d].s_row\t%s\n", round, printHexString(state).c_str());
+
         mixColumns(state);
+        printf("round[ %2d].m_col\t%s\n", round, printHexString(state).c_str());
+
         addRoundKey(state, w, round);
+        printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
     }
 
     subBytes(state);
-    shiftRows(state);
-    addRoundKey(state, w, 10);
+    printf("round[ %2d].s_box\t%s\n", round, printHexString(state).c_str());
 
-    for (int i = 0; i < 16; i++) {
-        out[i] = state[i % 4][i / 4];
+    shiftRows(state);
+    printf("round[ %2d].s_row\t%s\n", round, printHexString(state).c_str());
+
+    addRoundKey(state, w, 10);
+    printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
+
+//    for (int i = 0; i < 16; i++) {
+//        out[i] = state[i % 4][i / 4];
+//    }
+
+    printf("round[ %2d].output\t%s\n", round, printHexString(state).c_str());
+
+}
+
+/* Implement AES Encryption */
+std::string AES::printHexString(const uint8_t state[4][4]) const {
+    std::ostringstream oss;
+    for (int col = 0; col < 4; col++) {
+        for (int row = 0; row < 4; row++) {
+            oss << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(state[row][col]);
+        }
     }
+    return oss.str();
+}
+
+std::string AES::printRoundKey(const uint32_t* w, int round) const {
+    std::ostringstream oss;
+
+    int startIndex = round * 4;
+    for (int i = 0; i < 4; i++) {
+        oss << std::hex << std::setfill('0') << std::setw(8) << w[startIndex + i];
+    }
+    return oss.str();
 }

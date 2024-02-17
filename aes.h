@@ -1,4 +1,6 @@
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 
 #ifndef AES_ASSIGNMENT_AES_H
 #define AES_ASSIGNMENT_AES_H
@@ -31,6 +33,8 @@ public:
 
     uint32_t aesWord(uint8_t key0, uint8_t key1, uint8_t key2, uint8_t key3);
     void addRoundKey(uint8_t (&state)[4][4], uint32_t* w, int round);
+    std::string printRoundKey(const uint32_t* w, int round) const;
+    std::string printHexString(const uint8_t state[4][4]) const;
     void cipher(uint8_t in[16], uint8_t out[16], uint32_t* w);
     inline uint8_t ffMultiply(uint8_t num1, uint8_t num2);
     uint32_t* KeyExpansion(uint8_t* key, int Nk, int Nr);
@@ -39,11 +43,10 @@ public:
     uint8_t galoisMult(uint8_t a, uint8_t b);
     void mixColumns(uint8_t (&state)[4][4]);
 
-    inline uint8_t xtime(uint8_t polyn);
     void shiftRows(uint8_t (&array)[4][4]);
     void subBytes(uint8_t (&array)[4][4]);
+    inline uint8_t xtime(uint8_t polyn);
     uint32_t subWord(uint32_t sWord);
-
     uint32_t rotWord(uint32_t rWord);
 
     void invSubBytes();
@@ -54,6 +57,8 @@ private:
     const uint32_t Rcon[11] = {
             0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36
     };
+    const char* plaintext = "00112233445566778899aabbccddeeff";
+    const char* key = "000102030405060708090a0b0c0d0e0f";
 };
 
 /*
