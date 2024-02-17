@@ -5,20 +5,35 @@
 
 using namespace std;
 
-/* Uncomment below for unit tests */
-
-//void printState(const uint8_t state[4][4]) {
-//    for (int i = 0; i < 4; i++) {
-//        for (int j = 0; j < 4; j++) {
-//            cout << "0x" << setw(2) << setfill('0') << hex << (int)state[i][j] << " ";
-//        }
-//        cout << endl;
-//    }
-//    cout << endl;
-//}
-
-void hexStringToUint8Key(const std::string &hexStr, uint8_t key[16]) {
+void pthexStringToUint8Key(const std::string &hexStr, uint8_t key[16]) {
     for (int i = 0; i < 16; i++) {
+        unsigned int byte;
+        std::istringstream iss(hexStr.substr(i * 2, 2));
+        iss >> std::hex >> byte;
+        key[i] = static_cast<uint8_t>(byte);
+    }
+}
+
+void one_hexStringToUint8Key(const std::string &hexStr, uint8_t key[16]) {
+    for (int i = 0; i < 16; i++) {
+        unsigned int byte;
+        std::istringstream iss(hexStr.substr(i * 2, 2));
+        iss >> std::hex >> byte;
+        key[i] = static_cast<uint8_t>(byte);
+    }
+}
+
+void two_hexStringToUint8Key(const std::string &hexStr, uint8_t key[24]) {
+    for (int i = 0; i < 24; i++) {
+        unsigned int byte;
+        std::istringstream iss(hexStr.substr(i * 2, 2));
+        iss >> std::hex >> byte;
+        key[i] = static_cast<uint8_t>(byte);
+    }
+}
+
+void three_hexStringToUint8Key(const std::string &hexStr, uint8_t key[32]) {
+    for (int i = 0; i < 32; i++) {
         unsigned int byte;
         std::istringstream iss(hexStr.substr(i * 2, 2));
         iss >> std::hex >> byte;
@@ -28,55 +43,45 @@ void hexStringToUint8Key(const std::string &hexStr, uint8_t key[16]) {
 
 int main() {
 
-//    cout << "Original State For Test" << endl;
-//    printState(state);
-//
-//    cout << "Checking KeyExpansion Routine" << endl;
-//    uint32_t* w = aesencryption->KeyExpansion(key, 4, 10);
-//    for (int i = 0; i < 44; i++) {
-//        cout << "0x" << setw(8) << setfill('0') << hex << w[i] << " ";
-//        if ((i + 1) % 4 == 0) {
-//            cout << endl;
-//        }
-//    }
-//    cout << endl;
-//
-//    cout << "Checking SubBytes Method" << endl;
-//    aesencryption->subBytes(state);
-//    // check that state == sub
-//    printState(state);
-//
-//    cout << "Checking ShiftRows Method" << endl;
-//    aesencryption->shiftRows(state);
-//    // check that state == shift
-//    printState(state);
-//
-//    cout << "Checking MixColumns Method" << endl;
-//    aesencryption->mixColumns(state);
-//    printState(state);
-//
-//    cout << "Checking AddRoundKey Method" << endl;
-//    aesencryption->addRoundKey(state, w, 1);
-//    printState(state);
-//
-//    cout << "Checking the Cipher Routing" << endl;
-//    aesencryption->cipher(in, out, w);
-//    for (int j = 0; j < 16; j++) {
-//        cout << "0x" << setw(2) << setfill('0') << hex << (int)out[j] << " ";
-//    }
-//    cout << endl;
+    int Nk, Nr;
+    uint32_t* w;
+    const char* skey;
+    const char* plaintext;
+    AES* aesencryption = new AES(); // instantiate
+    uint8_t key[16], ptext[16], out[24];
 
-    const char* plaintext = "00112233445566778899aabbccddeeff";
-    const char* skey = "000102030405060708090a0b0c0d0e0f";
-    uint8_t key[16], ptext[16], out[16];
+    // AES 128-Bit Test
+    cout << "AES 128-bit Test" << endl;
+    Nk = 4; Nr = 10;
+    skey = "000102030405060708090a0b0c0d0e0f";
+    plaintext = "00112233445566778899aabbccddeeff";
+    one_hexStringToUint8Key(skey, key);
+    pthexStringToUint8Key(plaintext, ptext);
+    w = aesencryption->KeyExpansion(key, Nk, Nr);
+    aesencryption->cipher(ptext, out, w, Nr);
+    cout << endl;
 
-    hexStringToUint8Key(skey, key);
-    hexStringToUint8Key(plaintext, ptext);
+    // AES 192-bit Test
+    cout << "AES 192-bit Test" << endl;
+    Nk = 6; Nr = 12;
+    plaintext = "00112233445566778899aabbccddeeff";
+    skey = "000102030405060708090a0b0c0d0e0f1011121314151617";
+    two_hexStringToUint8Key(skey, key);
+    pthexStringToUint8Key(plaintext, ptext);
+    w = aesencryption->KeyExpansion(key, Nk, Nr);
+    aesencryption->cipher(ptext, out, w, Nr);
+    cout << endl;
 
-    AES* aesencryption = new AES();
-    uint32_t* w = aesencryption->KeyExpansion(key, 4, 10);
-
-    aesencryption->cipher(ptext, out, w);
+    // AES 256-bit Test
+    cout << "AES 256-bit Test" << endl;
+    Nk = 8; Nr = 14;
+    plaintext = "00112233445566778899aabbccddeeff";
+    skey = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
+    three_hexStringToUint8Key(skey, key);
+    pthexStringToUint8Key(plaintext, ptext);
+    w = aesencryption->KeyExpansion(key, Nk, Nr);
+    aesencryption->cipher(ptext, out, w, Nr);
+    cout << endl;
 
     return 0;
 }

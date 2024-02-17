@@ -35,7 +35,7 @@ public:
     void addRoundKey(uint8_t (&state)[4][4], uint32_t* w, int round);
     std::string printRoundKey(const uint32_t* w, int round) const;
     std::string printHexString(const uint8_t state[4][4]) const;
-    void cipher(uint8_t in[16], uint8_t out[16], uint32_t* w);
+    void cipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr);
     inline uint8_t ffMultiply(uint8_t num1, uint8_t num2);
     uint32_t* KeyExpansion(uint8_t* key, int Nk, int Nr);
     inline uint8_t ffAdd(uint8_t input, uint8_t input2);
@@ -54,8 +54,10 @@ public:
     void invMixColumns();
 
 private:
-    const uint32_t Rcon[11] = {
-            0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36
+    const uint32_t Rcon[16] = {
+            0x00, 0x01, 0x02, 0x04, 0x08, 0x10,
+            0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c,
+            0xd8, 0xab, 0x4d, 0x9a
     };
     const char* plaintext = "00112233445566778899aabbccddeeff";
     const char* key = "000102030405060708090a0b0c0d0e0f";

@@ -281,7 +281,7 @@ void AES::addRoundKey(uint8_t (&state)[4][4], uint32_t* w, int round)
     }
 }
 
-void AES::cipher(uint8_t in[16], uint8_t out[16], uint32_t* w)
+void AES::cipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
 {
     int round = 0;
     uint8_t state[4][4];
@@ -293,7 +293,7 @@ void AES::cipher(uint8_t in[16], uint8_t out[16], uint32_t* w)
     printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
     addRoundKey(state, w, 0);
 
-    for (round = 1; round < 10; round++) {
+    for (round = 1; round < Nr; round++) {
         printf("round[ %2d].start\t%s\n", round, printHexString(state).c_str());
 
         subBytes(state);
@@ -315,7 +315,7 @@ void AES::cipher(uint8_t in[16], uint8_t out[16], uint32_t* w)
     shiftRows(state);
     printf("round[ %2d].s_row\t%s\n", round, printHexString(state).c_str());
 
-    addRoundKey(state, w, 10);
+    addRoundKey(state, w, Nr);
     printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
 
 //    for (int i = 0; i < 16; i++) {
