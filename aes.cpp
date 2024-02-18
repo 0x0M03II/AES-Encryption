@@ -1,7 +1,6 @@
 #include "aes.h"
 #include <iostream>
 
-using namespace aes583;
 
 inline uint8_t AES::ffAdd(uint8_t input, uint8_t input2)
 {
@@ -82,6 +81,25 @@ void AES::subBytes(uint8_t (&state)[4][4])
     }
 }
 
+void AES::invSubBytes(uint8_t (&state)[4][4])
+{
+    uint8_t a, b;
+    int subValue = 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            // get x/y coordinates from j
+            subValue = state[i][j];
+
+            a = (subValue >> 4);
+            // bit mask 15 for low order 4 bits
+            b = (subValue & 0x0f);
+
+            subValue = InvSbox[a][b];
+            state[i][j] = subValue;
+        }
+    }
+}
+
 void AES::shiftRows(uint8_t (&state)[4][4])
 {
     /*
@@ -108,6 +126,54 @@ void AES::shiftRows(uint8_t (&state)[4][4])
         for (int c = 0; c < 4; c++)  {
             state[r][c] = temp[c];
         }
+    }
+}
+
+//void AES::invShiftRows(uint8_t (&state)[4][4])
+//{
+//    uint8_t temp;
+//
+//    // Loop through each row, starting from the second row
+//    for (int row = 1; row < 4; ++row) {
+//        for (int shifts = 0; shifts < row; ++shifts) {
+//            // Perform the shift to the right
+//            temp = state[row][3];
+//            for (int col = 3; col > 0; --col) {
+//                state[row][col] = state[row][col - 1];
+//            }
+//            state[row][0] = temp;
+//        }
+//    }
+//}
+
+void AES::invShiftRows(uint8_t (&state)[4][4]) {
+    uint8_t temp;
+
+    // Row 1: Shift 1 position to the right
+    temp = state[1][3];
+    for (int col = 3; col > 0; --col) {
+        state[1][col] = state[1][col - 1];
+    }
+    state[1][0] = temp;
+
+    // Row 2: Shift 2 positions to the right
+    // Do it twice
+    for (int shifts = 0; shifts < 2; ++shifts) {
+        temp = state[2][3];
+        for (int col = 3; col > 0; --col) {
+            state[2][col] = state[2][col - 1];
+        }
+        state[2][0] = temp;
+    }
+
+    // Row 3: Shift 3 positions to the right
+    // Do it three times
+    for (int shifts = 0; shifts < 3; ++shifts) {
+        temp = state[3][3];
+        for (int col = 3; col > 0; --col) {
+            state[3][col] = state[3][col - 1];
+        }
+        state[3][0] = temp;
     }
 }
 
@@ -208,24 +274,6 @@ uint32_t* AES::KeyExpansion(uint8_t* key, int Nk, int Nr)
     return w;
 }
 
-uint8_t galoisMult(uint8_t a, uint8_t b) {
-    uint8_t p = 0; // the product of the multiplication
-    for (int i = 0; i < 8; i++) {
-        if (b & 1) { // if the lowest bit of b is set
-            p ^= a; // add a to p
-        }
-
-        bool highBitSet = a & 0x80; // check if the highest bit of a is set
-        a <<= 1; // shift a to the left, multiplying it by x
-
-        if (highBitSet) {
-            a ^= 0x1b; // modulo x^8 + x^4 + x^3 + x + 1
-        }
-
-        b >>= 1; // shift b to the right, dividing it by x
-    }
-    return p;
-}
 
 void AES::mixColumns(uint8_t (&state)[4][4])
 {
@@ -238,6 +286,25 @@ void AES::mixColumns(uint8_t (&state)[4][4])
                     ffMultiply(state[1][col], MixColumsMatrics[row][1]) ^
                     ffMultiply(state[2][col], MixColumsMatrics[row][2]) ^
                     ffMultiply(state[3][col], MixColumsMatrics[row][3]);
+        }
+
+        for (int row = 0; row < 4; ++row) {
+            state[row][col] = temp[row];
+        }
+    }
+}
+
+void AES::invMixColumns(uint8_t (&state)[4][4])
+{
+    uint8_t temp[8];
+
+    for (int col = 0; col < 4; col++) {
+        for (int row = 0; row < 4; row++) {
+            temp[row] =
+                    ffMultiply(state[0][col], InvMixColumsMatrics[row][0]) ^
+                    ffMultiply(state[1][col], InvMixColumsMatrics[row][1]) ^
+                    ffMultiply(state[2][col], InvMixColumsMatrics[row][2]) ^
+                    ffMultiply(state[3][col], InvMixColumsMatrics[row][3]);
         }
 
         for (int row = 0; row < 4; ++row) {
@@ -261,7 +328,7 @@ void AES::addRoundKey(uint8_t (&state)[4][4], uint32_t* w, int round)
     }
 }
 
-void AES::cipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
+void AES::cipher(uint8_t in[16], uint8_t (&out)[16], uint32_t* w, int Nr)
 {
     int round = 0;
     uint8_t state[4][4];
@@ -298,11 +365,61 @@ void AES::cipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
     addRoundKey(state, w, Nr);
     printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
 
-//    for (int i = 0; i < 16; i++) {
-//        out[i] = state[i % 4][i / 4];
-//    }
-
     printf("round[ %2d].output\t%s\n", round, printHexString(state).c_str());
+
+    // save to out for use by invCipher
+    int i = 0;
+    for (int col = 0; col < 4; col++) {
+        for (int row = 0; row < 4; row++) {
+            out[i++] = state[row][col];
+        }
+    }
+
+    printHex(out);
+}
+
+void AES::invCipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
+{
+    int round = 0;
+    int invRound = 1;
+    uint8_t state[4][4];
+    for (int k = 0; k < 16; k++) {
+        state[k % 4][k / 4] = in[k];
+    }
+
+    printf("round[ %2d].iinput\t%s\n", round, plaintext);
+    printf("round[ %2d].ik_sch\t%s\n", round, printRoundKey(w, Nr).c_str());
+    addRoundKey(state, w, Nr);
+
+    for (round = Nr - 1; round > 0; round--) {
+        printf("round[ %2d].istart\t%s\n", invRound, printHexString(state).c_str());
+
+        invShiftRows(state);
+        printf("round[ %2d].is_row\t%s\n", invRound, printHexString(state).c_str());
+
+        invSubBytes(state);
+        printf("round[ %2d].is_box\t%s\n", invRound, printHexString(state).c_str());
+
+        printf("round[ %2d].ik_sch\t%s\n", round, printRoundKey(w, Nr).c_str());
+
+        addRoundKey(state, w, round);
+        printf("round[ %2d].ik_add\t%s\n", invRound, printRoundKey(w, round).c_str());
+
+        invMixColumns(state);
+        printf("round[ %2d].im_col\t%s\n", invRound, printHexString(state).c_str());
+        invRound++;
+    }
+
+    invSubBytes(state);
+    printf("round[ %2d].is_box\t%s\n", invRound, printHexString(state).c_str());
+
+    invShiftRows(state);
+    printf("round[ %2d].is_row\t%s\n", invRound, printHexString(state).c_str());
+
+    addRoundKey(state, w, 0);
+    printf("round[ %2d].ik_sch\t%s\n", invRound, printRoundKey(w, round).c_str());
+
+    printf("round[ %2d].ioutput\t%s\n", invRound, printHexString(state).c_str());
 
 }
 
@@ -325,4 +442,17 @@ std::string AES::printRoundKey(const uint32_t* w, int round) const {
         oss << std::hex << std::setfill('0') << std::setw(8) << w[startIndex + i];
     }
     return oss.str();
+}
+
+void AES::updatePlaintext(char* pl) {
+
+    plaintext = pl;
+}
+
+void AES::printHex(uint8_t arr[16]) {
+    std::stringstream ss;
+    for (int i = 0; i < 16; i++) {
+        ss << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(arr[i]);
+    }
+    std::cout << "VERIFY THIS HEX " << ss.str() << std::endl;
 }

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iomanip>
 #include <sstream>
 #include "aes.h"
 
@@ -48,17 +47,22 @@ int main() {
     const char* skey;
     const char* plaintext;
     AES* aesencryption = new AES(); // instantiate
-    uint8_t key[16], ptext[16], out[24];
+    uint8_t key[16], ptext[16], out[16], out2[16];
 
     // AES 128-Bit Test
     cout << "AES 128-bit Test" << endl;
     Nk = 4; Nr = 10;
     skey = "000102030405060708090a0b0c0d0e0f";
     plaintext = "00112233445566778899aabbccddeeff";
+    aesencryption->updatePlaintext("00112233445566778899aabbccddeeff");
     one_hexStringToUint8Key(skey, key);
     pthexStringToUint8Key(plaintext, ptext);
     w = aesencryption->KeyExpansion(key, Nk, Nr);
     aesencryption->cipher(ptext, out, w, Nr);
+    cout << endl;
+    cout << "AES 128-bit Inverse Test" << endl;
+    aesencryption->updatePlaintext("69c4e0d86a7b0430d8cdb78070b4c55a");
+    aesencryption->invCipher(out, out2, w, Nr);
     cout << endl;
 
     // AES 192-bit Test
