@@ -374,8 +374,6 @@ void AES::cipher(uint8_t in[16], uint8_t (&out)[16], uint32_t* w, int Nr)
             out[i++] = state[row][col];
         }
     }
-
-    printHex(out);
 }
 
 void AES::invCipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
@@ -400,7 +398,7 @@ void AES::invCipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
         invSubBytes(state);
         printf("round[ %2d].is_box\t%s\n", invRound, printHexString(state).c_str());
 
-        printf("round[ %2d].ik_sch\t%s\n", round, printRoundKey(w, Nr).c_str());
+        printf("round[ %2d].ik_sch\t%s\n", invRound, printRoundKey(w, Nr).c_str());
 
         addRoundKey(state, w, round);
         printf("round[ %2d].ik_add\t%s\n", invRound, printRoundKey(w, round).c_str());
@@ -447,12 +445,4 @@ std::string AES::printRoundKey(const uint32_t* w, int round) const {
 void AES::updatePlaintext(char* pl) {
 
     plaintext = pl;
-}
-
-void AES::printHex(uint8_t arr[16]) {
-    std::stringstream ss;
-    for (int i = 0; i < 16; i++) {
-        ss << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(arr[i]);
-    }
-    std::cout << "VERIFY THIS HEX " << ss.str() << std::endl;
 }

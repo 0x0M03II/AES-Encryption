@@ -27,7 +27,6 @@ class AES {
         void invMixColumns(uint8_t (&state)[4][4]);
         void mixColumns(uint8_t (&state)[4][4]);
 
-        void printHex(uint8_t arr[16]);
         void invShiftRows(uint8_t (&array)[4][4]);
         void invSubBytes(uint8_t (&state)[4][4]);
         void shiftRows(uint8_t (&array)[4][4]);

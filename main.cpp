@@ -70,21 +70,33 @@ int main() {
     Nk = 6; Nr = 12;
     plaintext = "00112233445566778899aabbccddeeff";
     skey = "000102030405060708090a0b0c0d0e0f1011121314151617";
+    aesencryption->updatePlaintext("00112233445566778899aabbccddeeff");
     two_hexStringToUint8Key(skey, key);
     pthexStringToUint8Key(plaintext, ptext);
     w = aesencryption->KeyExpansion(key, Nk, Nr);
     aesencryption->cipher(ptext, out, w, Nr);
     cout << endl;
+    cout << "AES 192-bit Inverse Test" << endl;
+    aesencryption->updatePlaintext("dda97ca4864cdfe06eaf70a0ec0d7191");
+    aesencryption->invCipher(out, out2, w, Nr);
+    cout << endl;
+
+
 
     // AES 256-bit Test
     cout << "AES 256-bit Test" << endl;
     Nk = 8; Nr = 14;
     plaintext = "00112233445566778899aabbccddeeff";
     skey = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
+    aesencryption->updatePlaintext("00112233445566778899aabbccddeeff");
     three_hexStringToUint8Key(skey, key);
     pthexStringToUint8Key(plaintext, ptext);
     w = aesencryption->KeyExpansion(key, Nk, Nr);
     aesencryption->cipher(ptext, out, w, Nr);
+    cout << endl;
+    cout << "AES 256-bit Inverse Test" << endl;
+    aesencryption->updatePlaintext("8ea2b7ca516745bfeafc49904b496089");
+    aesencryption->invCipher(out, out2, w, Nr);
     cout << endl;
 
     return 0;
