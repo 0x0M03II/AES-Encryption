@@ -336,36 +336,39 @@ void AES::cipher(uint8_t in[16], uint8_t (&out)[16], uint32_t* w, int Nr)
         state[k % 4][k / 4] = in[k];
     }
 
-    printf("round[ %2d].input\t%s\n", round, plaintext);
-    printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
+    printf("round[%2d].input     %s\n", round, plaintext);
+    printf("round[%2d].k_sch     %s\n", round, printRoundKey(w, round).c_str());
     addRoundKey(state, w, 0);
 
     for (round = 1; round < Nr; round++) {
-        printf("round[ %2d].start\t%s\n", round, printHexString(state).c_str());
+        printf("round[%2d].start     %s\n", round, printHexString(state).c_str());
 
         subBytes(state);
-        printf("round[ %2d].s_box\t%s\n", round, printHexString(state).c_str());
+        printf("round[%2d].s_box     %s\n", round, printHexString(state).c_str());
 
         shiftRows(state);
-        printf("round[ %2d].s_row\t%s\n", round, printHexString(state).c_str());
+        printf("round[%2d].s_row     %s\n", round, printHexString(state).c_str());
 
         mixColumns(state);
-        printf("round[ %2d].m_col\t%s\n", round, printHexString(state).c_str());
+        printf("round[%2d].m_col     %s\n", round, printHexString(state).c_str());
 
         addRoundKey(state, w, round);
-        printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
+        printf("round[%2d].k_sch     %s\n", round, printRoundKey(w, round).c_str());
     }
 
+    // final round
+    printf("round[%2d].start     %s\n", round, printHexString(state).c_str());
+
     subBytes(state);
-    printf("round[ %2d].s_box\t%s\n", round, printHexString(state).c_str());
+    printf("round[%2d].s_box     %s\n", round, printHexString(state).c_str());
 
     shiftRows(state);
-    printf("round[ %2d].s_row\t%s\n", round, printHexString(state).c_str());
+    printf("round[%2d].s_row     %s\n", round, printHexString(state).c_str());
 
     addRoundKey(state, w, Nr);
-    printf("round[ %2d].k_sch\t%s\n", round, printRoundKey(w, round).c_str());
+    printf("round[%2d].k_sch     %s\n", round, printRoundKey(w, round).c_str());
 
-    printf("round[ %2d].output\t%s\n", round, printHexString(state).c_str());
+    printf("round[%2d].output    %s\n", round, printHexString(state).c_str());
 
     // save to out for use by invCipher
     int i = 0;
@@ -385,39 +388,40 @@ void AES::invCipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
         state[k % 4][k / 4] = in[k];
     }
 
-    printf("round[ %2d].iinput\t%s\n", round, plaintext);
-    printf("round[ %2d].ik_sch\t%s\n", round, printRoundKey(w, Nr).c_str());
+    printf("round[%2d].iinput    %s\n", round, plaintext);
+    printf("round[%2d].ik_sch    %s\n", round, printRoundKey(w, Nr).c_str());
     addRoundKey(state, w, Nr);
 
     for (round = Nr - 1; round > 0; round--) {
-        printf("round[ %2d].istart\t%s\n", invRound, printHexString(state).c_str());
+        printf("round[%2d].istart    %s\n", invRound, printHexString(state).c_str());
 
         invShiftRows(state);
-        printf("round[ %2d].is_row\t%s\n", invRound, printHexString(state).c_str());
+        printf("round[%2d].is_row    %s\n", invRound, printHexString(state).c_str());
 
         invSubBytes(state);
-        printf("round[ %2d].is_box\t%s\n", invRound, printHexString(state).c_str());
+        printf("round[%2d].is_box    %s\n", invRound, printHexString(state).c_str());
 
-        printf("round[ %2d].ik_sch\t%s\n", invRound, printRoundKey(w, Nr).c_str());
+        printf("round[%2d].ik_sch    %s\n", invRound, printRoundKey(w, round).c_str());
 
-        addRoundKey(state, w, round);
-        printf("round[ %2d].ik_add\t%s\n", invRound, printRoundKey(w, round).c_str());
+		addRoundKey(state, w, round);
+	    printf("round[%2d].ik_add    %s\n", invRound, printHexString(state).c_str());
 
-        invMixColumns(state);
-        printf("round[ %2d].im_col\t%s\n", invRound, printHexString(state).c_str());
+		invMixColumns(state);
         invRound++;
     }
 
-    invSubBytes(state);
-    printf("round[ %2d].is_box\t%s\n", invRound, printHexString(state).c_str());
+	printf("round[%2d].istart    %s\n", invRound, printHexString(state).c_str());
 
     invShiftRows(state);
-    printf("round[ %2d].is_row\t%s\n", invRound, printHexString(state).c_str());
+    printf("round[%2d].is_row    %s\n", invRound, printHexString(state).c_str());
+
+	invSubBytes(state);
+	printf("round[%2d].is_box    %s\n", invRound, printHexString(state).c_str());
 
     addRoundKey(state, w, 0);
-    printf("round[ %2d].ik_sch\t%s\n", invRound, printRoundKey(w, round).c_str());
+    printf("round[%2d].ik_sch    %s\n", invRound, printRoundKey(w, 0).c_str());
 
-    printf("round[ %2d].ioutput\t%s\n", invRound, printHexString(state).c_str());
+    printf("round[%2d].ioutput   %s\n", invRound, printHexString(state).c_str());
 
 }
 

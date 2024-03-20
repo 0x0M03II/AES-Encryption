@@ -9,7 +9,7 @@ SOURCE_FILES="main.cpp aes.cpp"
 OUTPUT="aesprogram"
 
 # Compile the program
-g++ -o $OUTPUT $SOURCE_FILES
+g++ -o $OUTPUT $SOURCE_FILES --std=c++17
 
 # Check if the compilation was successful
 if [ $? -eq 0 ]; then
