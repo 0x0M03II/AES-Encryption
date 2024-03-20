@@ -410,7 +410,7 @@ void AES::invCipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
         invRound++;
     }
 
-	printf("round[%2d].istart    %s\n", invRound, printHexString(state).c_str());
+    printf("round[%2d].istart    %s\n", invRound, printHexString(state).c_str());
 
     invShiftRows(state);
     printf("round[%2d].is_row    %s\n", invRound, printHexString(state).c_str());
