@@ -403,10 +403,10 @@ void AES::invCipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
 
         printf("round[%2d].ik_sch    %s\n", invRound, printRoundKey(w, round).c_str());
 
-		addRoundKey(state, w, round);
-	    printf("round[%2d].ik_add    %s\n", invRound, printHexString(state).c_str());
+        addRoundKey(state, w, round);
+        printf("round[%2d].ik_add    %s\n", invRound, printHexString(state).c_str());
 
-		invMixColumns(state);
+        invMixColumns(state);
         invRound++;
     }
 
@@ -415,8 +415,8 @@ void AES::invCipher(uint8_t in[16], uint8_t out[16], uint32_t* w, int Nr)
     invShiftRows(state);
     printf("round[%2d].is_row    %s\n", invRound, printHexString(state).c_str());
 
-	invSubBytes(state);
-	printf("round[%2d].is_box    %s\n", invRound, printHexString(state).c_str());
+    invSubBytes(state);
+    printf("round[%2d].is_box    %s\n", invRound, printHexString(state).c_str());
 
     addRoundKey(state, w, 0);
     printf("round[%2d].ik_sch    %s\n", invRound, printRoundKey(w, 0).c_str());
